@@ -13,10 +13,10 @@ bloomberg_data = Bloomberg().get_data()
 ```
 
 The get_data() method accepts these arguments:
-* get_content=True - This determines whether or not you wish to scrape all visible text from the headlines' url
-* sleep=True - This determines whether there is a one second pause between each headline scrape
-* json_format=False - When set to True, it will output data into json format
-* include_headings=False - When set to True, it will include the column headings in the output. This is espciall helpful when writing the output to a CSV file 
+* ```get_content=True``` - This determines whether or not you wish to scrape all visible text from the headlines' url
+* ```sleep=True``` - This determines whether there is a one second pause between each headline scrape
+* ```json_format=False``` - When set to True, it will output data into json format
+* ```include_headings=False``` - When set to True, it will include the column headings in the output. This is espciall helpful when writing the output to a CSV file 
 
 All news sources return these data points:
 * Source
