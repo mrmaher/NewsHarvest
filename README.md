@@ -5,7 +5,8 @@ Package for collecting headlines and news stories from the Associated Press, Blo
 Collect headlines and cooresponding data with this code:
 
 ```
-from NewsHarvest.NewsHarvest import *
+from NewsHarvest.NewsHarvest import AssocitedPress, Reuters, Bloomberg
+from NewsHavest.utilities import *
 
 ap_data = AssociatedPress().get_data()
 reuters_data = Reuters().get_data()
@@ -37,7 +38,8 @@ Sources within Associated Press: headlines (or home), business, US, world, sport
 
 #### Example:
 ```
-from NewsHarvest.NewsHarvest import *
+from NewsHarvest.NewsHarvest import AssocitedPress
+from NewsHavest.utilities import *
 
 ap_sources = ['headlines', 'business', 'us', 'world']
 output = []
@@ -56,7 +58,8 @@ Sources within Reuters: businessNews, wealth, bankruptcyNews, bondsNews, deals, 
 #### Example:
 
 ```
-from NewsHarvest.NewsHarvest import *
+from NewsHarvest.NewsHarvest import Reuters
+from NewsHavest.utilities import *
 
 reuters_sources = ['businessNews', 'wealth', 'deals', 'economy']
 output = []
@@ -74,10 +77,11 @@ write_to_csv(output, 'reuters.csv')
 Sources within Bloomberg: top news, markets
 
 ```
-from NewsHarvest.NewsHarvest import *
+from NewsHarvest.NewsHarvest import Bloomberg
+from NewsHavest.utilities import *
 
 output = []
-source_data = Reuters(source='top news').get_data()
+source_data = Bloomberg(source='top news').get_data()
 for news_item in source_data:
     output.append(news_item)
 
@@ -91,7 +95,8 @@ This module contains many functions that are used as helper functions in the New
 But it also contains many functions that should aid in exporting and importing data:
 
 ```
-from NewsHarvest.NewsHarvest import *
+from NewsHarvest.NewsHarvest import AssocitedPress
+from NewsHavest.utilities import *
 
 data = AssociatedPress(source='headlines').get_data()
 write_to_csv(data, 'outpt_file.csv')
