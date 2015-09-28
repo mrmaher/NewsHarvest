@@ -137,7 +137,11 @@ def get_month():
 
 
 def parse_location(text):
-    if '*' in text[0]:
+    try:
+        if '*' in text[0]:
+            location = ''
+            return location
+    except IndexError:
         location = ''
         return location
     regex = re.compile("(.*?)\s*\(")

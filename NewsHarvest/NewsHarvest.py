@@ -5,6 +5,7 @@ __author__ = 'donnalley'
 
 
 # todo: implement 'espanol'
+# todo: implement dedupe
 class AssociatedPress(object):
     def __init__(self, source='home'):
         self.source = source
@@ -88,12 +89,12 @@ class AssociatedPress(object):
             raise AttributeError("Invalid source")
 
     def verify_source(self):
-        if self.source not in self.valid_sources and self.source != 'all':
+        if self.source not in self.valid_sources:
             raise AttributeError(
                 '''Invalid source. You may only input these sources:
                 home, headlines, business, us, world, sports, entertainment, health, science, politics, espanol''')
 
-    def get_data(self, get_content=True, sleep=True, json_format=False, include_headings=False):
+    def get_data(self, duplicates=False, get_content=True, sleep=True, json_format=False, include_headings=False):
         source = 'Associated Press - ' + self.source
         soup = open_and_soupify_url(self.url)
         output = []
@@ -109,6 +110,8 @@ class AssociatedPress(object):
             headline = headline_and_url.a.text.strip()
             prefix = 'http://hosted.ap.org/'
             url = prefix + headline_and_url.a['href']
+            if duplicates and url in duplicates:
+                continue
             excerpt = container.find(self.excerpt_tag, attrs=self.excerpt_attrs).text.strip()
             try:
                 location = parse_location(excerpt)
@@ -151,7 +154,7 @@ class Reuters(object):
         self.url = self.get_url()
 
     def verify_source(self):
-        if self.source not in self.valid_sources and self.source != 'all':
+        if self.source not in self.valid_sources:
             raise AttributeError(
                 '''Invalid source. You may only input these sources:
                 businessNews, wealth, bankruptcyNews, bondsNews, deals, economy, globalmarketsNews, hedgefunds,
