@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='NewsHarvest',
-    version='1.0.1',
+    version='1.2.0',
     packages=['NewsHarvest'],
     url='https://github.com/mdonnalley/NewsHarvest',
     license='',

@@ -18,6 +18,7 @@ The get_data() method accepts these arguments:
 * ```sleep=True``` - This determines whether there is a one second pause between each headline scrape
 * ```json_format=False``` - When set to True, it will output data into json format
 * ```include_headings=False``` - When set to True, it will include the column headings in the output. This is espciall helpful when writing the output to a CSV file 
+* ```duplicates=False``` - Insert a list of URLs that you've already have collected and it will skip over those as it is scraping
 
 All news sources return these data points:
 * Source

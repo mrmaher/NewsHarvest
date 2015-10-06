@@ -94,7 +94,7 @@ class AssociatedPress(object):
                 '''Invalid source. You may only input these sources:
                 home, headlines, business, us, world, sports, entertainment, health, science, politics, espanol''')
 
-    def get_data(self, duplicates=False, get_content=True, sleep=True, json_format=False, include_headings=False):
+    def get_data(self, get_content=True, sleep=True, json_format=False, include_headings=False, duplicates=False):
         source = 'Associated Press - ' + self.source
         soup = open_and_soupify_url(self.url)
         output = []
@@ -110,6 +110,7 @@ class AssociatedPress(object):
             headline = headline_and_url.a.text.strip()
             prefix = 'http://hosted.ap.org/'
             url = prefix + headline_and_url.a['href']
+            # skip if duplicate
             if duplicates and url in duplicates:
                 continue
             excerpt = container.find(self.excerpt_tag, attrs=self.excerpt_attrs).text.strip()
@@ -122,7 +123,7 @@ class AssociatedPress(object):
             date = standardize_date(date)
             publish_time = date_time[11:].replace('-', ':')
             if get_content:
-                page_content = collect_content(url)
+                page_content = self.collect_ap_content(url)
             else:
                 page_content = ''
 
@@ -134,14 +135,14 @@ class AssociatedPress(object):
         else:
             return output
 
-    # def get_espanol_data(self, get_content=True, sleep=True, json_format=False, include_headings=False):
-    #     source = 'Associated Press - ' + self.source
-    #     soup = open_and_soupify_url(self.url)
-    #     output = []
-    #     if include_headings is True and json_format is False:
-    #         headings = ['Source', 'Headline', 'URL', 'Excerpt', 'Location', 'Time', 'Date', 'Content']
-    #         output.append(headings)
-    #     return "Hello World"
+    @staticmethod
+    def collect_ap_content(url):
+        soup = open_and_soupify_url(url)
+        content = soup.find_all('p', attrs={'class': 'ap-story-p'})
+        output = ''
+        for item in content:
+            output += item.text
+        return output
 
 
 class Reuters(object):
@@ -169,7 +170,7 @@ class Reuters(object):
         url = prefix + self.source
         return url
 
-    def get_data(self, get_content=True, sleep=True, include_headings=False, json_format=False):
+    def get_data(self, get_content=True, sleep=True, include_headings=False, json_format=False, duplicates=False):
         source = 'Reuters - ' + self.source
         soup = open_and_soupify_url(self.url, parser='html.parser')
         output = []
@@ -183,6 +184,9 @@ class Reuters(object):
                 time.sleep(1)
             headline = container.find('title').text
             url = container.find('link').text
+            # skip if duplicate
+            if duplicates and url in duplicates:
+                continue
             raw_excerpt = container.find('description').text
             excerpt = clean_html(raw_excerpt)
             try:
@@ -199,7 +203,7 @@ class Reuters(object):
                 date = standardize_date(date)
                 publish_time = pubdate[-12:]
             if get_content:
-                page_content = collect_content(url)
+                page_content = self.get_reuters_content(url)
             else:
                 page_content = ''
             data_point = [source, headline, url, excerpt, location, publish_time, date, page_content]
@@ -209,6 +213,16 @@ class Reuters(object):
             return transform_to_json(output)
         else:
             return output
+
+    @staticmethod
+    def get_reuters_content(url):
+        soup = open_and_soupify_url(url)
+        article = soup.find('span', attrs={'id': 'articleText'})
+        content = article.find_all('p')
+        output = ''
+        for item in content:
+            output += item.text
+        return output
 
 
 class Bloomberg(object):
@@ -235,7 +249,7 @@ class Bloomberg(object):
         else:
             raise AttributeError('Invalid source. Use top news or markerts')
 
-    def get_data(self, get_content=True, sleep=True, json_format=False, include_headings=False):
+    def get_data(self, get_content=True, sleep=True, json_format=False, include_headings=False, duplicates=False):
         source = 'Bloomberg - ' + self.source
         soup = open_and_soupify_url(self.homepage, parser='html.parser')
         output = []
@@ -252,6 +266,9 @@ class Bloomberg(object):
             url = container.find(self.headline_tag, attrs=self.headline_attrs).a['href']
             if self.homepage not in url:
                 url = self.homepage.replace('markets/', '') + url
+            # skip if duplicate
+            if duplicates and url in duplicates:
+                continue
             if self.source == 'top news':
                 try:
                     excerpt = container.find(self.excerpt_tag, attrs=self.excerpt_attrs).text.strip()
@@ -260,13 +277,17 @@ class Bloomberg(object):
             else:
                 excerpt = ''
             location = ''
-            date_time = container.find(self.time_tag, attrs=self.time_attrs)['datetime']
-            date = date_time[:10]
-            date = standardize_date(date)
-            regex = re.compile('T(.*)$')
-            publish_time = regex.search(date_time).group(1)[:-2]
+            try:
+                date_time = container.find(self.time_tag, attrs=self.time_attrs)['datetime']
+                date = date_time[:10]
+                date = standardize_date(date)
+                regex = re.compile('T(.*)$')
+                publish_time = regex.search(date_time).group(1)[:-2]
+            except TypeError:
+                date = ''
+                publish_time = ''
             if get_content:
-                page_content = collect_content(url)
+                page_content = self.get_bloomberg_content(url)
             else:
                 page_content = ''
             data_point = [source, headline, url, excerpt, location, publish_time, date, page_content]
@@ -276,6 +297,16 @@ class Bloomberg(object):
             return transform_to_json(output)
         else:
             return output
+
+    @staticmethod
+    def get_bloomberg_content(url):
+        soup = open_and_soupify_url(url)
+        content = soup.find_all('p')
+        output = ''
+        for item in content:
+            output += item.text.encode('ascii', errors='ignore')
+        print output
+        return output
 
 
 # DEPRECATED

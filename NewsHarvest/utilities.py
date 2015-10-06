@@ -80,46 +80,6 @@ def transform_to_json(list_data):
     return output
 
 
-def collect_content(link):
-    if '.pdf' in link:
-        content = 'Error: PDF'
-    else:
-        try:
-            html = requests.get(link, headers={'user-agent': 'Mozilla/5.0'}).text
-            soup = BeautifulSoup(html, 'html.parser')
-            text = soup.find_all(text=True)
-            content = filter(visible, text)
-            content = ' '.join(content).encode('ascii', errors='ignore')
-            content = content.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
-            content = clean_html(content)
-        except (requests.HTTPError, requests.exceptions.ConnectionError, ValueError):
-            content = 'Error: 404 not found'
-    return content
-
-
-def clean_html(html_text):
-    # Remove inline JavaScript/CSS:
-    cleaned = re.sub(r"(?is)<(script|style).*?>.*?(<!--\1-->)", "", html_text.strip())
-    # Remove html comments. This has to be done before removing regular tags since comments can contain '>' characters.
-    cleaned = re.sub(r"(?s)<!--(.*?)-->[\n]?", "", cleaned)
-    # Remove the remaining tags:
-    cleaned = re.sub(r"(?s)<.*?>", " ", cleaned)
-    # deal with whitespace
-    cleaned = re.sub(r" ", " ", cleaned)
-    cleaned = re.sub(r"  ", " ", cleaned)
-    return cleaned.strip()
-
-
-def visible(element):
-    if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
-        return False
-    elif re.match('<!--.*-->', str(element.encode('ascii', errors='ignore'))):
-        return False
-    elif re.match('\n', str(element.encode('ascii', errors='ignore'))):
-        return False
-    return True
-
-
 def open_and_soupify_url(url, parser='html.parser'):
     headers = {'user-agent': 'Mozilla/5.0'}
     html = requests.get(url, headers=headers).text
@@ -168,3 +128,44 @@ def standardize_date(date_string):
         year = pieces[2]
         date_string = month + "/" + day + "/" + year
     return date_string
+
+
+# Deprecated
+def collect_content(link):
+    if '.pdf' in link:
+        content = 'Error: PDF'
+    else:
+        try:
+            html = requests.get(link, headers={'user-agent': 'Mozilla/5.0'}).text
+            soup = BeautifulSoup(html, 'html.parser')
+            text = soup.find_all(text=True)
+            content = filter(visible, text)
+            content = ' '.join(content).encode('ascii', errors='ignore')
+            content = content.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
+            content = clean_html(content)
+        except (requests.HTTPError, requests.exceptions.ConnectionError, ValueError):
+            content = 'Error: 404 not found'
+    return content
+
+
+def clean_html(html_text):
+    # Remove inline JavaScript/CSS:
+    cleaned = re.sub(r"(?is)<(script|style).*?>.*?(<!--\1-->)", "", html_text.strip())
+    # Remove html comments. This has to be done before removing regular tags since comments can contain '>' characters.
+    cleaned = re.sub(r"(?s)<!--(.*?)-->[\n]?", "", cleaned)
+    # Remove the remaining tags:
+    cleaned = re.sub(r"(?s)<.*?>", " ", cleaned)
+    # deal with whitespace
+    cleaned = re.sub(r" ", " ", cleaned)
+    cleaned = re.sub(r"  ", " ", cleaned)
+    return cleaned.strip()
+
+
+def visible(element):
+    if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+        return False
+    elif re.match('<!--.*-->', str(element.encode('ascii', errors='ignore'))):
+        return False
+    elif re.match('\n', str(element.encode('ascii', errors='ignore'))):
+        return False
+    return True
